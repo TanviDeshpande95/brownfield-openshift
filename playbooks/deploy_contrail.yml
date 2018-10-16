@@ -1,0 +1,16 @@
+---
+- name: install contrail controller components
+  hosts: masters
+  roles:
+   - role: contrail_master
+
+- name: install contrail node components
+  hosts: all
+  roles:
+   - role: contrail_node
+
+- name: install contrail controller components
+  hosts: masters
+  roles:
+   - role: contrail_controller
+

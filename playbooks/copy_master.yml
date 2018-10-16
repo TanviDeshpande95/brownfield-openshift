@@ -1,0 +1,9 @@
+---
+
+- hosts: 127.0.0.1
+  tasks:
+   - name: copy contrail_master into your openshift-ansible-deployer
+     dest: "{{ dst_directory }}"
+     command: cp ../templates/os_contrail_master.yaml {{dst_directory}}/roles/contrail_controller/tasks/os_contrail_master.yaml
+     become: yes
+

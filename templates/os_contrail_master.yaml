@@ -1,0 +1,96 @@
+---
+- set_fact:
+    api_vip: "{{ groups.lb.0 | ipaddr }}"
+  when: groups.lb is defined
+
+- set_fact:
+    api_vip: "{{ groups.masters.0 | ipaddr }}"
+  when: groups.lb is not defined
+
+- name: Create Contrail single YAML file for Contrail 4.0
+  template:
+    src: contrail-installer-4.j2
+    dest: /tmp/contrail-installer.yaml
+    owner: root
+    mode: 0644
+  run_once: true
+  when:
+     - "{{ contrail_version is version('5.0', '<') }}"
+
+- name: Create Contrail single YAML file for Contrail 5.0
+  template:
+    src: contrail-installer-5.j2
+    dest: /tmp/contrail-installer.yaml
+    owner: root
+    mode: 0644
+  run_once: true
+  when:
+     - "{{ contrail_version is version('5.0', '>=') }}"
+     - "{{ contrail_version is version('5.1', '<') }}"
+
+- name: Create Contrail single YAML file for Contrail 5.1
+  template:
+   src: contrail-installer-5.1.j2
+   dest: /tmp/contrail-installer.yaml
+   owner: root
+   mode: 0644
+  run_once: true
+  when:
+     - "{{ contrail_version is version('5.1', '>=') }}"
+
+- name: Create Contrail single YAML file for Contrail nested mode
+  template:
+   src: contrail-nested.j2
+   dest: /tmp/contrail-installer.yaml
+   owner: root
+   mode: 0644
+  when:
+     - nested_mode_contrail == "true"
+
+- name: Copy the wait for POD script to master node
+  template:
+    src: wait_for_pod.sh
+    dest: /tmp/wait_for_pod.sh
+    owner: root
+    mode: 0777
+  run_once: true
+
+- name: Add Contrail service accountto privileged scc
+  command: oc adm policy add-scc-to-user privileged system:serviceaccount:kube-system:contrail
+  run_once: True
+
+- name: Add the daemonset-controller service account to privileged scc
+  command: oc adm policy add-scc-to-user privileged system:serviceaccount:kube-system:daemon-set-controller
+  run_once: True
+
+- name: Label infra nodes with node-role.kubernetes.io/compute=true
+  command: oc label nodes --selector=region=infra node-role.kubernetes.io/compute=true --overwrite=true
+  run_once: True
+
+- name: Label contrail master nodes with opencontrail.org/controller=true
+  command: oc label nodes {{ hostvars[item]['openshift_hostname'] }} opencontrail.org/controller=true --overwrite=true
+  with_items: "{{ contrail_masters.split() }}"
+
+- name: Create Contrail registry secret
+  command: oc create secret docker-registry contrail-registry-secret --docker-server="{{ contrail_registry }}" --docker-username="{{ contrail_registry_username }}" --docker-password="{{ contrail_registry_password }}" --docker-email=contrail@helloworld.com -n kube-system
+  run_once: True
+  when: contrail_registry_username is defined
+  ignore_errors: True
+
+- name: Launch the Contrail installer
+  command: oc create -f /tmp/contrail-installer.yaml
+  run_once: True
+  ignore_errors: True
+
+- name: Check Pods script to Master Node
+  command: /tmp/wait_for_pod.sh
+  register: command_result
+  failed_when: "'ERROR' in command_result.stdout"
+  run_once: True
+
+- name: Patch restricted scc
+  command: >
+    oc patch scc restricted --patch='{ "runAsUser": { "type": "RunAsAny" } }'
+  run_once: True
+  ignore_errors: True
+
