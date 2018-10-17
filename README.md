@@ -77,12 +77,15 @@ Ansible playbooks to install contrail in a Brownfield Openshift deployment. The 
    ```
    
    cd <path-to-your-openshift-ansible>/playbooks
+   
+   ```
+   ```
    ansible-playbook -i inventory/ose-install deploy_contrail.yml
     
     ```
 
 
-This playbook will install Contrail.
+  This playbook will install Contrail.
  
  
 
