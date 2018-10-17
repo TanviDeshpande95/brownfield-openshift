@@ -50,6 +50,7 @@ Ansible playbooks to install contrail in a Brownfield Openshift deployment. The 
  your openshift-ansible deployer.
 
 5. Please append contrail parameters to your openshift inventory.
+
    ```
 
    openshift_use_openshift_sdn=false
@@ -68,96 +69,21 @@ Ansible playbooks to install contrail in a Brownfield Openshift deployment. The 
    [contrail_masters]
    10.10.10.10 openshift_hostname=ip-10-10-10-10.us-west-1.compute.internal
  
- ```
+ 
+  ```
+  
+6. Run the deploy_contrail.yml file
 
-4. Run the deploy_contrail.yml file
    ```
+   
    cd <path-to-your-openshift-ansible>/playbooks
-    ansible-playbook -i inventory/ose-install deploy_contrail.yml
+   ansible-playbook -i inventory/ose-install deploy_contrail.yml
+    
     ```
 
-     This playbook will install Contrail.
+
+This playbook will install Contrail.
+ 
+ 
 
 
-5. Verify that Contrail is up
-   Login to your node
-   ```
-
-   [root@ip-10-10-10-11 ~]# contrail-status
-   Pod              Service         Original Name                          State    Status       
-  analytics        alarm-gen       contrail-analytics-alarm-gen           running  Up 20 hours  
-  analytics        api             contrail-analytics-api                 running  Up 20 hours  
-  analytics        collector       contrail-analytics-collector           running  Up 20 hours  
-  analytics        nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  analytics        query-engine    contrail-analytics-query-engine        running  Up 20 hours  
-  analytics        snmp-collector  contrail-analytics-snmp-collector      running  Up 20 hours  
-  analytics        topology        contrail-analytics-topology            running  Up 20 hours  
-  config           api             contrail-controller-config-api         running  Up 20 hours  
-  config           device-manager  contrail-controller-config-devicemgr   running  Up 20 hours  
-  config           nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  config           schema          contrail-controller-config-schema      running  Up 20 hours  
-  config           svc-monitor     contrail-controller-config-svcmonitor  running  Up 20 hours  
-  config-database  cassandra       contrail-external-cassandra            running  Up 20 hours  
-  config-database  nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  config-database  rabbitmq        contrail-external-rabbitmq             running  Up 20 hours  
-  config-database  zookeeper       contrail-external-zookeeper            running  Up 20 hours  
-  control          control         contrail-controller-control-control    running  Up 20 hours  
-  control          dns             contrail-controller-control-dns        running  Up 20 hours  
-  control          named           contrail-controller-control-named      running  Up 20 hours  
-  control          nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  database         cassandra       contrail-external-cassandra            running  Up 20 hours  
-  database         kafka           contrail-external-kafka                running  Up 20 hours  
-  database         nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  database         zookeeper       contrail-external-zookeeper            running  Up 20 hours  
-  kubernetes       kube-manager    contrail-kubernetes-kube-manager       running  Up 20 hours  
-  vrouter          agent           contrail-vrouter-agent                 running  Up 20 hours  
-  vrouter          nodemgr         contrail-nodemgr                       running  Up 20 hours  
-  webui            job             contrail-controller-webui-job          running  Up 20 hours  
-  webui            web             contrail-controller-webui-web          running  Up 20 hours  
-
-  vrouter kernel module is PRESENT
-  == Contrail control ==
-  control: active
-  nodemgr: active
-  named: active
-  dns: active
-
-  == Contrail config-database ==
-  nodemgr: active
-  zookeeper: active
-  rabbitmq: active
-  cassandra: active
-
-  == Contrail kubernetes ==
-  kube-manager: active
-
-  == Contrail database ==
-  kafka: active
-  nodemgr: active
-  zookeeper: active
-  cassandra: active
-
-  == Contrail analytics ==
-  snmp-collector: active
-  query-engine: active
-  api: active
-  alarm-gen: active
-  nodemgr: active
-  collector: active
-  topology: active
-
-  == Contrail webui ==
-  web: active
-  job: active
-
-  == Contrail vrouter ==
-  nodemgr: active
-  agent: active
-
-  == Contrail config ==
-  svc-monitor: active
-  nodemgr: active
-  device-manager: active
-  api: active
-  schema: active
-```
