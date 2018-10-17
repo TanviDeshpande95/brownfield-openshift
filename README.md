@@ -49,30 +49,8 @@ Ansible playbooks to install contrail in a Brownfield Openshift deployment. The 
    Refer to [custom-openshift](https://github.com/Juniper/custom-openshift) for appending Contrail SDN roles to
  your openshift-ansible deployer.
 
-5. Please append contrail parameters to your openshift inventory.
-
-   ```
-
-   openshift_use_openshift_sdn=false
-   os_sdn_network_plugin_name='cni'
-   openshift_use_contrail=true
-   contrail_version=5.0
-   contrail_container_tag=5.0.1-0.214
-   contrail_registry_insecure=true
-   contrail_registry=hub.juniper.net/contrail
-   # Username /Password for private Docker registry
-   #contrail_registry_username=test
-   #contrail_registry_password=test
-   #vrouter_gateway=10.10.10.1
-
-   #**Add this contrail vars list**
-   [contrail_masters]
-   10.10.10.10 openshift_hostname=ip-10-10-10-10.us-west-1.compute.internal
- 
- 
-  ```
   
-6. Run the deploy_contrail.yml file to install contrail
+5. Run the deploy_contrail.yml file to install contrail
 
    ```
     cd <path-to-your-openshift-ansible>/playbooks
