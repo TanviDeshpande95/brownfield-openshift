@@ -7,6 +7,28 @@
     api_vip: "{{ groups.masters.0 | ipaddr }}"
   when: groups.lb is not defined
 
+- name: Create the agent template file
+  template:
+    src: contrail-agent-installer-5.j2
+    dest: /tmp/contrail-agent-installer.yaml
+    owner: root
+    mode: 0644
+  run_once: true
+  when:
+     - "{{ contrail_version is version('5.0', '>=') }}"
+     - "{{ contrail_version is version('5.1', '<') }}"
+
+- name: Create the contrail infrastructure template file
+  template:
+    src: contrail-infra-installer-5.j2
+    dest: /tmp/contrail-infra-installer.yaml
+    owner: root
+    mode: 0644
+  run_once: true
+  when:
+     - "{{ contrail_version is version('5.0', '>=') }}"
+     - "{{ contrail_version is version('5.1', '<') }}"
+
 - name: Create Contrail single YAML file for Contrail 4.0
   template:
     src: contrail-installer-4.j2
@@ -19,7 +41,7 @@
 
 - name: Create Contrail single YAML file for Contrail 5.0
   template:
-    src: contrail-installer-5.j2
+    src: contrail-controller-installer-5.j2
     dest: /tmp/contrail-installer.yaml
     owner: root
     mode: 0644
@@ -55,7 +77,7 @@
     mode: 0777
   run_once: true
 
-- name: Add Contrail service accountto privileged scc
+- name: Add Contrail service account to privileged scc
   command: oc adm policy add-scc-to-user privileged system:serviceaccount:kube-system:contrail
   run_once: True
 
@@ -77,10 +99,46 @@
   when: contrail_registry_username is defined
   ignore_errors: True
 
+- name: Starting the agent pod on required nodes
+  command: oc create -f /tmp/contrail-agent-installer.yaml
+  run_once: True
+  ignore_errors: True
+  when:
+     - "{{ contrail_version is version('5.0', '>=') }}"
+     - "{{ contrail_version is version('5.1', '<') }}"
+
+- name: Check Pods script to Master Node
+  command: /tmp/wait_for_pod.sh
+  register: command_result
+  failed_when: "'ERROR' in command_result.stdout"
+  run_once: True
+
+- name: Starting the infrastructure pods on required nodes
+  command: oc create -f /tmp/contrail-infra-installer.yaml
+  run_once: True
+  ignore_errors: True
+  when:
+     - "{{ contrail_version is version('5.0', '>=') }}"
+     - "{{ contrail_version is version('5.1', '<') }}"
+
+- name: Check Pods script to Master Node
+  command: /tmp/wait_for_pod.sh
+  register: command_result
+  failed_when: "'ERROR' in command_result.stdout"
+  run_once: True
+
+- name: sleep for 180 seconds and continue with play
+  wait_for: timeout=180
+  delegate_to: localhost
+
 - name: Launch the Contrail installer
   command: oc create -f /tmp/contrail-installer.yaml
   run_once: True
   ignore_errors: True
+
+- name: sleep for 300 seconds and continue with play
+  wait_for: timeout=300
+  delegate_to: localhost
 
 - name: Check Pods script to Master Node
   command: /tmp/wait_for_pod.sh
